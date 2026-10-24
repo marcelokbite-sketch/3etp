@@ -1,5 +1,5 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { CustomerApiClient } from '../api/api-client';
 import { firstValueFrom } from 'rxjs';
 
 export interface CustomerAddress {
@@ -67,7 +67,7 @@ export interface CustomerActivity {
   providedIn: 'root'
 })
 export class CustomerIdentityService {
-  private http = inject(HttpClient);
+  private api = inject(CustomerApiClient);
 
   readonly currentCustomer = signal<CustomerAccount | null>(null);
   readonly customerToken = signal<string | null>(
@@ -81,14 +81,9 @@ export class CustomerIdentityService {
     }
   }
 
-  private get headers() {
-    const token = this.customerToken();
-    return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-  }
-
   async register(data: { name: string; email: string; phone: string; password: string }): Promise<CustomerAccount> {
     const res = await firstValueFrom(
-      this.http.post<{ token: string; customer: CustomerAccount }>('/api/v1/customer/auth/register', data)
+      this.api.post<{ token: string; customer: CustomerAccount }>('/customer/auth/register', data)
     );
     this.setSession(res.token, res.customer);
     return res.customer;
@@ -96,7 +91,7 @@ export class CustomerIdentityService {
 
   async login(data: { email: string; password: string }): Promise<CustomerAccount> {
     const res = await firstValueFrom(
-      this.http.post<{ token: string; customer: CustomerAccount }>('/api/v1/customer/auth/login', data)
+      this.api.post<{ token: string; customer: CustomerAccount }>('/customer/auth/login', data)
     );
     this.setSession(res.token, res.customer);
     return res.customer;
@@ -104,7 +99,7 @@ export class CustomerIdentityService {
 
   logout(): void {
     if (this.customerToken()) {
-      firstValueFrom(this.http.post('/api/v1/customer/auth/logout', {}, this.headers)).catch(() => undefined);
+      firstValueFrom(this.api.post('/customer/auth/logout', {})).catch(() => undefined);
     }
     this.clearSession();
   }
@@ -113,7 +108,7 @@ export class CustomerIdentityService {
     if (!this.customerToken()) return null;
     try {
       const res = await firstValueFrom(
-        this.http.get<{ customer: CustomerAccount }>('/api/v1/customer/auth/me', this.headers)
+        this.api.get<{ customer: CustomerAccount }>('/customer/auth/me')
       );
       this.currentCustomer.set(res.customer);
       return res.customer;
@@ -125,7 +120,7 @@ export class CustomerIdentityService {
 
   async updateProfile(data: Partial<CustomerAccount>): Promise<CustomerAccount> {
     const res = await firstValueFrom(
-      this.http.put<{ customer: CustomerAccount }>('/api/v1/customer/profile', data, this.headers)
+      this.api.put<{ customer: CustomerAccount }>('/customer/profile', data)
     );
     this.currentCustomer.set(res.customer);
     return res.customer;
@@ -133,7 +128,7 @@ export class CustomerIdentityService {
 
   async addAddress(address: Omit<CustomerAddress, 'id'>): Promise<CustomerAddress[]> {
     const res = await firstValueFrom(
-      this.http.post<{ addresses: CustomerAddress[] }>('/api/v1/customer/addresses', address, this.headers)
+      this.api.post<{ addresses: CustomerAddress[] }>('/customer/addresses', address)
     );
     if (this.currentCustomer()) {
       this.currentCustomer.update(c => c ? { ...c, addresses: res.addresses } : null);
@@ -143,7 +138,7 @@ export class CustomerIdentityService {
 
   async deleteAddress(addressId: string): Promise<CustomerAddress[]> {
     const res = await firstValueFrom(
-      this.http.delete<{ addresses: CustomerAddress[] }>(`/api/v1/customer/addresses/${addressId}`, this.headers)
+      this.api.delete<{ addresses: CustomerAddress[] }>(`/customer/addresses/${addressId}`)
     );
     if (this.currentCustomer()) {
       this.currentCustomer.update(c => c ? { ...c, addresses: res.addresses } : null);
@@ -153,7 +148,7 @@ export class CustomerIdentityService {
 
   async toggleFavorite(companyId: string): Promise<boolean> {
     const res = await firstValueFrom(
-      this.http.post<{ isFavorite: boolean; favorites: string[] }>('/api/v1/customer/favorites/toggle', { companyId }, this.headers)
+      this.api.post<{ isFavorite: boolean; favorites: string[] }>('/customer/favorites/toggle', { companyId })
     );
     if (this.currentCustomer()) {
       this.currentCustomer.update(c => c ? { ...c, favorites: res.favorites } : null);
@@ -163,7 +158,7 @@ export class CustomerIdentityService {
 
   async fetchActivity(): Promise<CustomerActivity> {
     return firstValueFrom(
-      this.http.get<CustomerActivity>('/api/v1/customer/activity', this.headers)
+      this.api.get<CustomerActivity>('/customer/activity')
     );
   }
 

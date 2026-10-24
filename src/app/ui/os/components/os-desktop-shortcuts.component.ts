@@ -164,25 +164,21 @@ export interface StickyNote {
       <!-- Premium B2B Operator & Sync Bento Dashboard Sidebar -->
       <div 
         (mousedown)="$event.stopPropagation()"
-        [class]="themeService.isDeskTheme() 
-          ? 'absolute top-6 right-6 bottom-20 w-[360px] desk-drawer border border-amber-600/40 rounded-2xl flex flex-col pointer-events-auto shadow-[0_20px_50px_rgba(0,0,0,0.85)] hidden lg:flex overflow-hidden text-[#fef3c7]' 
-          : 'absolute top-6 right-6 bottom-20 w-[360px] linux-glass border border-white/10 rounded-2xl flex flex-col pointer-events-auto shadow-2xl hidden lg:flex overflow-hidden linux-accent-glow'">
+        class="desktop-sidebar absolute top-6 right-6 bottom-20 w-[360px] rounded-2xl flex flex-col pointer-events-auto shadow-2xl hidden lg:flex overflow-hidden">
         
         <!-- Dashboard Header -->
-        <div [class]="themeService.isDeskTheme() ? 'p-3.5 border-b border-amber-600/30 flex items-center justify-between bg-black/40' : 'p-3.5 border-b border-white/10 flex items-center justify-between bg-black/30'">
+        <div class="menu-header p-3.5 border-b flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <div 
-              [class]="themeService.isDeskTheme() ? 'w-6 h-6 rounded desk-brass-plate flex items-center justify-center text-amber-950 font-bold' : 'w-6 h-6 rounded-lg bg-[var(--accent-color)]/20 flex items-center justify-center text-[var(--accent-color)]'">
+            <div class="launcher-icon w-6 h-6 rounded flex items-center justify-center font-bold">
               <mat-icon class="text-sm">{{ themeService.isDeskTheme() ? 'desk' : 'terminal' }}</mat-icon>
             </div>
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-100 font-mono">Painel do Operador</span>
+            <span class="text-xs font-bold uppercase tracking-wider font-mono">Painel do Operador</span>
           </div>
           <div class="flex items-center gap-2">
-            <span 
-              [class]="themeService.isDeskTheme() ? 'text-[9px] font-mono text-amber-300 font-bold' : 'text-[9px] font-mono text-[var(--accent-color)]'">
+            <span class="theme-badge text-[9px] font-mono font-bold">
               {{ themeService.currentTheme().distro.split(' ')[0] }}
             </span>
-            <span class="h-2 w-2 rounded-full" [ngClass]="syncHealthy() ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500 animate-pulse'"></span>
+            <span class="status-indicator w-2 h-2 rounded-full" [ngClass]="syncHealthy() ? 'animate-pulse' : 'animate-pulse'"></span>
           </div>
         </div>
 

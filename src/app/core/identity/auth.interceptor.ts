@@ -1,6 +1,7 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { IdentityService } from './identity.service';
+import { CustomerIdentityService } from './customer-identity.service';
 import { DeviceService } from '../device/device.service';
 import { AUTH_AUTHORITY } from '../api/api-client';
 
@@ -18,6 +19,7 @@ function isExplicitHqRoute(url: string): boolean {
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const identityService = inject(IdentityService);
+  const customerIdentityService = inject(CustomerIdentityService);
   const deviceService = inject(DeviceService);
 
   // If calling an API route, attach appropriate authorization token and device metadata
@@ -25,6 +27,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     const authority = req.context.get(AUTH_AUTHORITY);
     const hqToken = identityService.getHqToken();
     const clientToken = identityService.getClientToken();
+    const customerToken = customerIdentityService.customerToken();
     const dState = deviceService.deviceState();
 
     let chosenToken: string | null = null;
@@ -33,17 +36,29 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       chosenToken = hqToken;
     } else if (authority === 'client') {
       chosenToken = clientToken;
+    } else if (authority === 'customer') {
+      chosenToken = customerToken;
     } else {
       // Auto-resolution:
-      // 1. Check if the URL is an explicit HQ route
-      const isHqRoute = isExplicitHqRoute(req.url);
-      // 2. Check if current browser path is in /hq
-      const isHqLocation = typeof window !== 'undefined' && window.location.pathname.startsWith('/hq');
-
-      if (isHqRoute || isHqLocation) {
+      if (req.url.startsWith('/api/v1/customer')) {
+        chosenToken = customerToken;
+      } else if (isExplicitHqRoute(req.url)) {
         chosenToken = hqToken;
       } else {
-        chosenToken = clientToken;
+        const isHqLocation = typeof window !== 'undefined' && window.location.pathname.startsWith('/hq');
+        const isCustomerLocation = typeof window !== 'undefined' && (
+          window.location.pathname.startsWith('/marketplace') ||
+          window.location.pathname.startsWith('/public') ||
+          window.location.pathname.startsWith('/customer')
+        );
+
+        if (isCustomerLocation && customerToken) {
+          chosenToken = customerToken;
+        } else if (isHqLocation) {
+          chosenToken = hqToken;
+        } else {
+          chosenToken = clientToken;
+        }
       }
     }
 

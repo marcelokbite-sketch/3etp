@@ -10,36 +10,28 @@ import { OsProfileType } from '../../../core/os-profile/os-profile.service';
   imports: [CommonModule, MatIconModule],
   template: `
     @if (isOpen()) {
-      <div 
-        [class]="themeService.isDeskTheme() 
-          ? 'absolute bottom-16 left-4 right-4 sm:left-auto sm:w-92 max-h-[calc(100vh-6rem)] overflow-y-auto z-50 rounded-2xl desk-drawer border border-amber-600/40 shadow-[0_20px_50px_rgba(0,0,0,0.9)] text-[#fef3c7] p-4 space-y-4 animate-tray-slide' 
-          : 'absolute bottom-16 left-4 right-4 sm:left-auto sm:w-92 max-h-[calc(100vh-6rem)] overflow-y-auto z-50 rounded-2xl linux-glass border border-white/10 shadow-2xl text-[var(--text-primary)] p-4 space-y-4 animate-tray-slide linux-accent-glow'">
+      <div class="quick-settings absolute bottom-16 left-4 right-4 sm:left-auto sm:w-92 max-h-[calc(100vh-6rem)] overflow-y-auto z-50 rounded-2xl p-4 space-y-4 animate-tray-slide">
         
         <!-- Header: BigLinux Control Center or DEsk Switchboard -->
-        <div [class]="themeService.isDeskTheme() ? 'flex justify-between items-center border-b border-amber-600/30 pb-2.5' : 'flex justify-between items-center border-b border-white/10 pb-2.5'">
+        <div class="menu-header flex justify-between items-center border-b pb-2.5">
           <div class="flex items-center gap-2">
-            <div 
-              [class]="themeService.isDeskTheme() ? 'w-6 h-6 rounded desk-brass-plate flex items-center justify-center text-amber-950 font-bold' : 'text-[var(--accent-color)]'">
+            <div class="launcher-icon w-6 h-6 rounded flex items-center justify-center font-bold">
               <mat-icon class="text-sm">tune</mat-icon>
             </div>
             <h3 class="text-xs font-bold text-white">
               {{ themeService.isDeskTheme() ? 'Painel de Comando Físico (DEsk)' : 'Centro de Controle OS' }}
             </h3>
           </div>
-          <span 
-            [class]="themeService.isDeskTheme() ? 'text-[9px] uppercase font-mono font-bold text-amber-300 tracking-wider' : 'text-[9px] uppercase font-mono font-bold text-[var(--accent-color)] tracking-wider'">
+          <span class="theme-badge text-[9px] uppercase font-mono font-bold tracking-wider">
             {{ themeService.currentTheme().distro.split(' ')[0] }}
           </span>
         </div>
 
-        <!-- Operational Profile Selector (Varejo x Restaurantes) -->
-        <div class="space-y-2 border-b border-white/10 pb-3">
+        <!-- Operational Profile Selector -->
+        <div class="space-y-2 border-b pb-3">
           <div class="flex items-center justify-between">
             <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Modo Operacional da Empresa</span>
-            <span 
-              [class]="themeService.isDeskTheme() ? 'text-[8px] font-mono text-amber-300' : 'text-[8px] font-mono text-[var(--accent-color)]'">
-              Suíte Pré-instalada
-            </span>
+            <span class="theme-badge text-[8px] font-mono">Suíte Pré-instalada</span>
           </div>
 
           <div class="grid grid-cols-2 gap-2">
@@ -47,10 +39,8 @@ import { OsProfileType } from '../../../core/os-profile/os-profile.service';
             <button 
               type="button"
               (click)="selectProfile.emit('retail')"
-              [class]="activeProfile() === 'retail'
-                ? (themeService.isDeskTheme() ? 'desk-brass-plate text-amber-950 font-bold ring-2 ring-amber-400/80 shadow-md' : 'bg-emerald-600 text-white font-bold ring-2 ring-emerald-400')
-                : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/5'"
-              class="p-2.5 rounded-xl flex flex-col gap-1 text-left transition-all">
+              [class.active-profile]="activeProfile() === 'retail'"
+              class="profile-btn p-2.5 rounded-xl flex flex-col gap-1 text-left transition-all">
               <div class="flex items-center justify-between">
                 <mat-icon class="text-base">storefront</mat-icon>
                 @if (activeProfile() === 'retail') {
@@ -65,10 +55,8 @@ import { OsProfileType } from '../../../core/os-profile/os-profile.service';
             <button 
               type="button"
               (click)="selectProfile.emit('restaurant')"
-              [class]="activeProfile() === 'restaurant'
-                ? (themeService.isDeskTheme() ? 'desk-brass-plate text-amber-950 font-bold ring-2 ring-amber-400/80 shadow-md' : 'bg-amber-600 text-white font-bold ring-2 ring-amber-400')
-                : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/5'"
-              class="p-2.5 rounded-xl flex flex-col gap-1 text-left transition-all">
+              [class.active-profile]="activeProfile() === 'restaurant'"
+              class="profile-btn p-2.5 rounded-xl flex flex-col gap-1 text-left transition-all">
               <div class="flex items-center justify-between">
                 <mat-icon class="text-base">restaurant</mat-icon>
                 @if (activeProfile() === 'restaurant') {

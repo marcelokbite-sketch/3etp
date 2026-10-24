@@ -20,13 +20,9 @@ import { OsWindowComponent } from './os-window.component';
   template: `
     <!-- Intelligent Snap Preview Zones -->
     @if (snapPreviewZone() === 'left') {
-      <div [class]="themeService.isDeskTheme() 
-        ? 'fixed left-0 top-0 w-1/2 h-[calc(100vh-3.5rem)] bg-amber-500/15 border-r-4 border-amber-500/70 backdrop-blur-xs z-[9999] pointer-events-none animate-pulse shadow-[inset_0_0_30px_rgba(245,158,11,0.2)]'
-        : 'fixed left-0 top-0 w-1/2 h-[calc(100vh-3.5rem)] bg-[var(--accent-color)]/10 border-r-2 border-[var(--accent-color)]/50 backdrop-blur-[2px] z-[9999] pointer-events-none animate-pulse'"></div>
+      <div class="snap-preview-zone left-snap"></div>
     } @else if (snapPreviewZone() === 'right') {
-      <div [class]="themeService.isDeskTheme()
-        ? 'fixed right-0 top-0 w-1/2 h-[calc(100vh-3.5rem)] bg-amber-500/15 border-l-4 border-amber-500/70 backdrop-blur-xs z-[9999] pointer-events-none animate-pulse shadow-[inset_0_0_30px_rgba(245,158,11,0.2)]'
-        : 'fixed right-0 top-0 w-1/2 h-[calc(100vh-3.5rem)] bg-[var(--accent-color)]/10 border-l-2 border-[var(--accent-color)]/50 backdrop-blur-[2px] z-[9999] pointer-events-none animate-pulse'"></div>
+      <div class="snap-preview-zone right-snap"></div>
     }
 
     <!-- Window Manager Container -->
@@ -40,53 +36,36 @@ import { OsWindowComponent } from './os-window.component';
             [style.width]="win.isMaximized ? '100vw' : (win.isSnapped ? '50%' : getWindowWidth(win) + 'px')"
             [style.height]="win.isMaximized ? 'calc(100vh - 3.5rem)' : (win.isSnapped ? 'calc(100vh - 3.5rem)' : getWindowHeight(win) + 'px')"
             (mousedown)="focusWindow.emit(win.id)"
-            [ngClass]="[
-              topWindowId() === win.id 
-                ? (themeService.isDeskTheme() ? 'shadow-[0_28px_65px_-10px_rgba(20,13,8,0.85)] ring-1 ring-amber-500/40' : 'shadow-2xl ring-2 ring-[var(--accent-color)]/50 border-[var(--accent-color)]/40 linux-accent-glow') 
-                : (themeService.isDeskTheme() ? 'shadow-[0_12px_28px_-6px_rgba(20,13,8,0.55)] opacity-[0.99]' : 'shadow-lg border-slate-700/30 opacity-[0.98]'),
-              (win.isMaximized || win.isSnapped) ? 'rounded-none' : (themeService.isDeskTheme() ? 'desk-paper-sheet' : 'rounded-2xl border linux-window-frame'),
-              activeDraggingId() === win.id 
-                ? (themeService.isDeskTheme() 
-                    ? 'scale-[1.015] -rotate-[0.6deg] shadow-[0_40px_90px_rgba(15,10,6,0.92)] ring-2 ring-amber-400/80 cursor-grabbing !transition-none' 
-                    : 'scale-[1.015] rotate-[0.4deg] shadow-2xl ring-2 ring-[var(--accent-color)] cursor-grabbing !transition-none') 
-                : '',
-              activeResizingId() === win.id ? 'ring-2 ring-emerald-500/50 shadow-xl' : ''
-            ]"
-            [class.transition-all]="activeDraggingId() !== win.id && activeResizingId() !== win.id"
-            [class.duration-200]="activeDraggingId() !== win.id && activeResizingId() !== win.id"
-            class="absolute bg-white flex flex-col overflow-hidden pointer-events-auto transform">
+            [class.active-window]="topWindowId() === win.id"
+            [class.window-dragging]="activeDraggingId() === win.id"
+            [class.window-resizing]="activeResizingId() === win.id"
+            class="os-window absolute bg-white flex flex-col overflow-hidden pointer-events-auto transform transition-all duration-200">
             
-            <!-- Window Title Bar (DEsk Walnut/Brass or KWin/Plasma Glass) -->
+            <!-- Window Title Bar -->
             <div 
               (mousedown)="onStartDrag($event, win)"
               (dblclick)="toggleMaximize.emit(win.id)"
-              [class]="themeService.isDeskTheme() 
-                ? 'h-10 bg-gradient-to-r from-[#2c1e15] via-[#38261b] to-[#2c1e15] text-[#fef3c7] flex items-center justify-between px-3.5 border-b border-amber-600/30 select-none shrink-0 cursor-move shadow-inner'
-                : 'h-10 bg-slate-900/95 text-white flex items-center justify-between px-3.5 border-b border-white/10 select-none shrink-0 cursor-move'">
+              class="window-titlebar h-10 flex items-center justify-between px-3.5 border-b select-none shrink-0 cursor-move">
               <div class="flex items-center gap-2.5 pointer-events-none">
                 @if (themeService.isDeskTheme()) {
                   <div class="desk-brass-screw mr-0.5 hidden sm:block"></div>
                   <mat-icon class="text-amber-400 text-xs opacity-75">attach_file</mat-icon>
                 }
-                <div 
-                  [class]="themeService.isDeskTheme() 
-                    ? 'w-6 h-6 rounded desk-brass-plate flex items-center justify-center text-amber-950 shadow-sm' 
-                    : 'w-6 h-6 rounded-lg bg-[var(--accent-color)]/20 border border-[var(--accent-color)]/30 flex items-center justify-center text-[var(--accent-color)]'">
+                <div class="window-icon w-6 h-6 rounded-lg flex items-center justify-center">
                   <mat-icon class="text-[14px]">{{ win.icon }}</mat-icon>
                 </div>
-                <span 
-                  [class]="themeService.isDeskTheme() ? 'text-xs font-bold text-amber-100 tracking-wide font-sans' : 'text-xs font-bold text-slate-200 tracking-wide font-mono'">
+                <span class="window-title text-xs font-bold tracking-wide">
                   {{ win.title }}
                 </span>
                 @if (win.isSnapped) {
-                  <span class="text-[8px] uppercase font-mono px-1.5 py-0.2 rounded bg-[var(--accent-color)]/20 text-[var(--accent-color)] font-bold tracking-wider">Ajustado</span>
+                  <span class="window-badge snapped-badge text-[8px] uppercase font-mono px-1.5 py-0.2 rounded font-bold tracking-wider">Ajustado</span>
                 }
                 @if (themeService.isDeskTheme() && !win.isSnapped) {
-                  <span class="text-[8px] uppercase font-mono px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold tracking-wider border border-amber-500/30">Documento</span>
+                  <span class="window-badge desk-badge text-[8px] uppercase font-mono px-1.5 py-0.2 rounded font-bold tracking-wider">Documento</span>
                 }
               </div>
               
-              <!-- Window Controls (Minimize, Maximize, Close) -->
+              <!-- Window Controls -->
               <div class="flex items-center gap-1">
                 @if (themeService.isDeskTheme()) {
                   <div class="desk-brass-screw ml-1 mr-1 hidden sm:block"></div>
@@ -96,7 +75,7 @@ import { OsWindowComponent } from './os-window.component';
                   type="button"
                   (click)="onTriggerSnap(win.id, win.isSnapped === 'left' ? null : 'left', $event)" 
                   title="Ajustar à Esquerda"
-                  class="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
+                  class="window-ctrl-btn w-6 h-6 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors">
                   <mat-icon class="text-[14px]">chevron_left</mat-icon>
                 </button>
                 <!-- Align Right Button -->
@@ -104,7 +83,7 @@ import { OsWindowComponent } from './os-window.component';
                   type="button"
                   (click)="onTriggerSnap(win.id, win.isSnapped === 'right' ? null : 'right', $event)" 
                   title="Ajustar à Direita"
-                  class="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
+                  class="window-ctrl-btn w-6 h-6 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors">
                   <mat-icon class="text-[14px]">chevron_right</mat-icon>
                 </button>
                 <!-- Minimize Button -->
@@ -112,7 +91,7 @@ import { OsWindowComponent } from './os-window.component';
                   type="button"
                   (click)="minimizeWindow.emit(win.id); $event.stopPropagation()" 
                   title="Minimizar"
-                  class="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
+                  class="window-ctrl-btn w-6 h-6 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors">
                   <mat-icon class="text-[14px]">remove</mat-icon>
                 </button>
                 <!-- Maximize / Restore Button -->
@@ -120,7 +99,7 @@ import { OsWindowComponent } from './os-window.component';
                   type="button"
                   (click)="toggleMaximize.emit(win.id); $event.stopPropagation()" 
                   [title]="win.isMaximized ? 'Restaurar' : 'Maximizar'"
-                  class="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
+                  class="window-ctrl-btn w-6 h-6 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors">
                   <mat-icon class="text-[13px]">{{ win.isMaximized ? 'filter_none' : 'crop_square' }}</mat-icon>
                 </button>
                 <!-- Close Button -->
@@ -128,14 +107,14 @@ import { OsWindowComponent } from './os-window.component';
                   type="button"
                   (click)="closeWindow.emit(win.id); $event.stopPropagation()" 
                   title="Fechar"
-                  class="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-rose-600 hover:text-white text-slate-400 transition-colors">
+                  class="window-close-btn w-6 h-6 flex items-center justify-center rounded-lg hover:bg-rose-600 transition-colors">
                   <mat-icon class="text-[14px]">close</mat-icon>
                 </button>
               </div>
             </div>
             
-            <!-- Window Content (Paper look in DEsk mode) -->
-            <div [class]="themeService.isDeskTheme() ? 'flex-1 overflow-auto bg-[#faf8f2] relative' : 'flex-1 overflow-auto bg-slate-50 relative'">
+            <!-- Window Content -->
+            <div class="window-content flex-1 overflow-auto relative">
               @let appId = win.componentId || win.id;
               @let status = appRegistry.loadingStates()[appId] || 'unloaded';
 

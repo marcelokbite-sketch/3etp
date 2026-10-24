@@ -1,6 +1,6 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { ClientApiClient } from './core/api/api-client';
 import { GetOsStateUseCase } from './core/application/store/get-os-state.usecase';
 import { InstallAppUseCase } from './core/application/store/install-app.usecase';
 import { UninstallAppUseCase } from './core/application/store/uninstall-app.usecase';
@@ -39,7 +39,7 @@ export class OsStateService {
   private uninstallAppUseCase = inject(UninstallAppUseCase);
   private identityService = inject(IdentityService);
   private osDb = inject(OsDatabaseService);
-  private http = inject(HttpClient);
+  private api = inject(ClientApiClient);
   private appRegistry = inject(AppRegistryService, { optional: true });
 
   // Available apps in the store (backward-compatibility raw list)
@@ -106,7 +106,7 @@ export class OsStateService {
       const state = await this.getOsState.execute(targetId);
       
       // Fetch server-authoritative apps with status
-      const appsWithStatus = await firstValueFrom(this.http.get<StoreAppResponse[]>('/api/v1/store/apps'));
+      const appsWithStatus = await firstValueFrom(this.api.get<StoreAppResponse[]>('/store/apps'));
       const storeApps = appsWithStatus || [];
       const catalogApps = storeApps.map(x => x.app);
 
@@ -180,7 +180,7 @@ export class OsStateService {
   async updateApp(appId: string): Promise<boolean> {
     console.log(`[OsState] Updating app ${appId}`);
     try {
-      const response = await firstValueFrom(this.http.post<{ success: boolean; installedVersion?: string }>(`/api/v1/store/apps/${appId}/update`, {}));
+      const response = await firstValueFrom(this.api.post<{ success: boolean; installedVersion?: string }>(`/store/apps/${appId}/update`, {}));
       if (response && response.installedVersion && this.appRegistry) {
         this.appRegistry.upgradeManifestVersion(appId, response.installedVersion);
       }

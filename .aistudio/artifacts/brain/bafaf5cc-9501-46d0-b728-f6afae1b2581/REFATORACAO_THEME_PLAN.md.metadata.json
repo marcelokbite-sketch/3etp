@@ -1,0 +1,6 @@
+{
+  "summary":  "Plano de refatoração para centralizar a lógica de temas (Skeuomorphic vs. Modern) no RUN OS, substituindo condicionais espalhadas nos templates por CSS variáveis controladas pelo LinuxThemeService.",
+  "updatedAt":  "2026-10-23T16:03:01.514905654Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

@@ -20,14 +20,44 @@ export class KdsRouterService implements OnDestroy {
   readonly tickets = this.ticketsSignal.asReadonly();
 
   private slaCheckTimer: ReturnType<typeof setInterval> | null = null;
+  private eventBusSubscription?: { unsubscribe: () => void };
 
   constructor() {
     this.loadTicketsFromStorage();
     this.startSlaMonitor();
+    this.listenToEventBus();
+  }
+
+  private listenToEventBus(): void {
+    this.eventBusSubscription = this.eventBus.subscribe('marketplace.order_created', (evt) => {
+      const payload = evt.payload as {
+        orderId?: string;
+        companyId?: string;
+        customerName?: string;
+        items?: { name: string; quantity: number; price?: number }[];
+      };
+      if (payload && Array.isArray(payload.items) && payload.items.length > 0) {
+        void this.routeAndSubmitOrder({
+          companyId: payload.companyId || 'cmp_default',
+          branchId: 'br_main',
+          customerName: payload.customerName || 'Cliente Marketplace',
+          orderType: 'delivery',
+          priority: 'high',
+          items: payload.items.map((it, idx) => ({
+            productId: `prd_online_${idx}`,
+            name: it.name,
+            quantity: it.quantity,
+            category: 'Delivery'
+          }))
+        });
+        this.diagnostics.info(`[KDS] Pedido #${payload.orderId || 'online'} roteado automaticamente para a cozinha.`);
+      }
+    });
   }
 
   ngOnDestroy(): void {
     if (this.slaCheckTimer) clearInterval(this.slaCheckTimer);
+    if (this.eventBusSubscription) this.eventBusSubscription.unsubscribe();
   }
 
   async loadTicketsFromStorage(companyId = 'cmp_default'): Promise<void> {

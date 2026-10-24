@@ -13,11 +13,9 @@ import { OsProfileType } from '../../../core/os-profile/os-profile.service';
   template: `
     <div [class]="themeService.isFloatingDock() ? 'p-2 flex justify-center w-full z-50 pointer-events-none' : 'w-full z-50'">
       <footer 
-        [class]="themeService.isDeskTheme()
-          ? 'h-14 max-w-6xl w-full rounded-2xl desk-drawer flex items-center justify-between px-3.5 z-50 shrink-0 select-none shadow-2xl pointer-events-auto transition-all duration-300 relative'
-          : (themeService.isFloatingDock() 
-            ? 'h-14 max-w-6xl w-full rounded-2xl linux-glass border border-white/10 linux-accent-glow flex items-center justify-between px-3.5 z-50 shrink-0 select-none shadow-2xl pointer-events-auto transition-all duration-300 relative' 
-            : 'h-14 w-full bg-[var(--bg-surface)]/90 backdrop-blur-md border-t border-white/5 flex items-center justify-between px-4 z-50 shrink-0 select-none transition-all duration-300 relative')">
+        [class]="'h-14 w-full flex items-center justify-between px-3.5 z-50 shrink-0 select-none transition-all duration-300 relative pointer-events-auto ' + 
+                 (themeService.isDeskTheme() ? 'desk-theme rounded-2xl desk-drawer shadow-2xl max-w-6xl' : 
+                 (themeService.isFloatingDock() ? 'rounded-2xl linux-glass border border-white/10 linux-accent-glow shadow-2xl max-w-6xl' : 'bg-[var(--bg-surface)]/90 backdrop-blur-md border-t border-white/5'))">
         
         <!-- DEsk Drawer Central Brass Pull Handle Accent -->
         @if (themeService.isDeskTheme()) {
@@ -34,19 +32,13 @@ import { OsProfileType } from '../../../core/os-profile/os-profile.service';
           <button 
             type="button"
             (click)="toggleStartMenu.emit()"
-            [class.bg-[var(--accent-color)]]="isStartMenuOpen() && !themeService.isDeskTheme()"
-            [class.text-slate-950]="isStartMenuOpen() && !themeService.isDeskTheme()"
-            [class.desk-brass-plate]="themeService.isDeskTheme()"
-            [title]="themeService.currentTheme().distro + ' Launcher (Super / Win)'"
-            class="h-10 px-3 rounded-xl hover:bg-white/10 flex items-center gap-2 text-[var(--text-primary)] transition-all shadow-md group border border-white/5">
+            [class.active-launcher]="isStartMenuOpen()"
+            class="launcher-btn h-10 px-3 rounded-xl hover:bg-white/10 flex items-center gap-2 text-[var(--text-primary)] transition-all shadow-md group border border-white/5">
             <div 
-              [class]="themeService.isDeskTheme() ? 'bg-amber-950/20 text-amber-950' : 'bg-[var(--accent-color)]/20 text-[var(--accent-color)]'"
-              class="w-6 h-6 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+              class="launcher-icon w-6 h-6 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
               <mat-icon class="text-sm">{{ themeService.isDeskTheme() ? 'desk' : 'terminal' }}</mat-icon>
             </div>
-            <span 
-              [class]="themeService.isDeskTheme() ? 'text-amber-950' : ''"
-              class="text-xs font-bold font-mono tracking-tight hidden md:inline">
+            <span class="text-xs font-bold font-mono tracking-tight hidden md:inline">
               {{ themeService.currentTheme().name.split(' ')[0] }}
             </span>
           </button>
@@ -61,26 +53,19 @@ import { OsProfileType } from '../../../core/os-profile/os-profile.service';
                 (click)="toggleWindow.emit(win.id)"
                 (mouseenter)="onTaskbarItemHover(win.id, $event)"
                 (mouseleave)="hoveredTaskbarAppId.set(null)"
-                [class]="topWindowId() === win.id && !win.isMinimized 
-                  ? (themeService.isDeskTheme() ? 'bg-amber-950/40 border-amber-500/60 shadow-inner text-amber-200' : 'bg-white/15 border-[var(--accent-color)]/60 shadow-inner text-white') 
-                  : win.isMinimized 
-                    ? 'bg-white/5 border-white/5 text-[var(--text-secondary)] opacity-75 hover:opacity-100 hover:bg-white/10' 
-                    : 'bg-white/5 border-white/5 text-[var(--text-primary)] hover:bg-white/10'"
-                class="h-10 px-3 rounded-xl flex items-center gap-2 border transition-all duration-200 hover:scale-102 active:scale-95 max-w-[170px] shrink-0 text-left relative group">
+                [class.active-window]="topWindowId() === win.id && !win.isMinimized"
+                [class.minimized-window]="win.isMinimized"
+                class="taskbar-item h-10 px-3 rounded-xl flex items-center gap-2 border transition-all duration-200 hover:scale-102 active:scale-95 max-w-[170px] shrink-0 text-left relative group">
                 
-                <div 
-                  [class]="themeService.isDeskTheme() ? 'bg-amber-500/20 text-amber-300' : 'bg-[var(--accent-color)]/20 text-[var(--accent-color)]'"
-                  class="w-5 h-5 rounded flex items-center justify-center shrink-0">
+                <div class="taskbar-icon w-5 h-5 rounded flex items-center justify-center shrink-0">
                   <mat-icon class="text-xs">{{ win.icon }}</mat-icon>
                 </div>
                 
                 <span class="text-xs font-medium truncate">{{ win.title }}</span>
                 
-                <!-- Linux Active App Glow Indicator (Dot) -->
+                <!-- Active App Indicator -->
                 @if (topWindowId() === win.id && !win.isMinimized) {
-                  <span 
-                    [class]="themeService.isDeskTheme() ? 'bg-amber-400 shadow-[0_0_8px_#f59e0b]' : 'bg-[var(--accent-color)] shadow-[0_0_8px_var(--accent-color)]'"
-                    class="absolute bottom-1 left-1/2 -translate-x-1/2 w-3.5 h-1 rounded-full"></span>
+                  <span class="active-indicator absolute bottom-1 left-1/2 -translate-x-1/2 w-3.5 h-1 rounded-full"></span>
                 } @else if (!win.isMinimized) {
                   <span class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-slate-400 opacity-60"></span>
                 }

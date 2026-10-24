@@ -1,17 +1,17 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { ClientApiClient } from '../../api/api-client';
 import { Company } from '../../domain/company/company.entity';
 import { CompanyRepository } from '../../domain/company/company.repository';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ApiCompanyRepository implements CompanyRepository {
-  private http = inject(HttpClient);
-  private readonly baseUrl = '/api/v1/companies';
+  private api = inject(ClientApiClient);
+  private readonly baseUrl = '/companies';
 
   async getById(id: string): Promise<Company | null> {
     try {
-      const data = await firstValueFrom(this.http.get<{
+      const data = await firstValueFrom(this.api.get<{
         id: string;
         name: string;
         balance: number;
@@ -38,13 +38,13 @@ export class ApiCompanyRepository implements CompanyRepository {
         data.licenseExpiresAt || '2026-12-31'
       );
     } catch (e: unknown) {
-      if (e && typeof e === 'object' && 'status' in e && e.status === 404) return null;
+      if (e && typeof e === 'object' && 'status' in e && (e as { status: number }).status === 404) return null;
       throw e;
     }
   }
 
   async save(company: Company): Promise<void> {
-    await firstValueFrom(this.http.put(`${this.baseUrl}/${company.id}`, {
+    await firstValueFrom(this.api.put(`${this.baseUrl}/${company.id}`, {
       name: company.name,
       balance: company.balance,
       installedApps: company.installedApps,

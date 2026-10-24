@@ -374,7 +374,7 @@ export interface MarketplaceOrderSummary {
                     }
                   </div>
                   <div class="text-xs font-bold text-white">{{ order.customerName }} <span class="text-slate-400 font-normal">({{ order.customerPhone || 'Sem telefone' }})</span></div>
-                  <div class="text-[11px] text-amber-300/70 font-mono">{{ order.companyName }} • {{ order.items?.length || 0 }} itens</div>
+                  <div class="text-[11px] text-amber-300/70 font-mono">{{ order.companyName }} • {{ order.items.length || 0 }} itens</div>
                   <div class="text-[10px] text-slate-400">{{ order.customerAddress || 'Retirada no balcão' }}</div>
                 </div>
 

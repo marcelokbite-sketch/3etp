@@ -1,0 +1,6 @@
+{
+  "summary":  "Plano para investigar sobreposições visuais e componentes legados no RUN OS (Frontend OS). O foco é mapear o uso de classes CSS físicas (skeuomorphic) versus modernas, limpar referências obsoletas e garantir consistência com o LinuxThemeService.",
+  "updatedAt":  "2026-10-23T15:44:04.959212732Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}
